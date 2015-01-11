@@ -19,6 +19,10 @@ _cgo_export.*
 
 _testmain.go
 
+tweets.csv
+*.toml
+
 *.exe
 *.test
 *.prof
+go-retro-bot
