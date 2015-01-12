@@ -13,12 +13,14 @@ import (
 	"github.com/garyburd/go-oauth/oauth"
 )
 
+// Twitter is simple twitter client
 type Twitter struct {
 	config      TwitterConfig
 	oauthClient oauth.Client
 	token       *oauth.Credentials
 }
 
+// TwitterConfig is config for twitter
 type TwitterConfig struct {
 	ConsumerKey    string
 	ConsumerSecret string
@@ -26,7 +28,7 @@ type TwitterConfig struct {
 	AccessSecret   string
 }
 
-func openUrl(url string) {
+func openURL(url string) {
 	switch runtime.GOOS {
 	case "linux":
 		exec.Command("xdg-open", url).Start()
@@ -39,6 +41,7 @@ func openUrl(url string) {
 	fmt.Printf("open %s\n", url)
 }
 
+// NewTwitter is constractor for Twitter
 func NewTwitter(config TwitterConfig) *Twitter {
 	twitter := &Twitter{
 		config: config,
@@ -54,7 +57,7 @@ func NewTwitter(config TwitterConfig) *Twitter {
 func (t *Twitter) clientAuth(requestToken *oauth.Credentials) (*oauth.Credentials, error) {
 	url := t.oauthClient.AuthorizationURL(requestToken, nil)
 
-	openUrl(url)
+	openURL(url)
 	fmt.Println("enter PIN.")
 	stdin := bufio.NewReader(os.Stdin)
 	b, err := stdin.ReadBytes('\n')
@@ -99,6 +102,7 @@ func (t *Twitter) getAccessToken() error {
 	return nil
 }
 
+// PostTweet post tweet to twitter API
 func (t *Twitter) PostTweet(status string) error {
 	if t.token == nil {
 		err := t.getAccessToken()

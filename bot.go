@@ -13,13 +13,13 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-type Config struct {
+type appConfig struct {
 	Days    int
 	Twitter TwitterConfig
 }
 
-func loadConfig(filepath string) Config {
-	var config Config
+func loadConfig(filepath string) appConfig {
+	var config appConfig
 	_, err := toml.DecodeFile(filepath, &config)
 	if err != nil {
 		log.Fatal("config load error:", err)
@@ -27,7 +27,7 @@ func loadConfig(filepath string) Config {
 	return config
 }
 
-func saveConfig(filepath string, config Config, twitter *Twitter) {
+func saveConfig(filepath string, config appConfig, twitter *Twitter) {
 	var buffer bytes.Buffer
 	encoder := toml.NewEncoder(&buffer)
 	config.Twitter = twitter.config
@@ -43,12 +43,12 @@ func saveConfig(filepath string, config Config, twitter *Twitter) {
 }
 
 func main() {
-	config_file := flag.String("config", "retrobot.toml", "config file")
+	configFile := flag.String("config", "retrobot.toml", "config file")
 	flag.Parse()
 
-	config := loadConfig(*config_file)
+	config := loadConfig(*configFile)
 	twitter := NewTwitter(config.Twitter)
-	defer saveConfig(*config_file, config, twitter)
+	defer saveConfig(*configFile, config, twitter)
 
 	csvfile, err := os.Open(flag.Arg(0))
 	if err != nil {
