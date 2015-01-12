@@ -2,9 +2,7 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -12,7 +10,6 @@ import (
 	"os/exec"
 	"runtime"
 
-	"github.com/BurntSushi/toml"
 	"github.com/garyburd/go-oauth/oauth"
 )
 
@@ -23,7 +20,6 @@ type Twitter struct {
 }
 
 type TwitterConfig struct {
-	Days           int
 	ConsumerKey    string
 	ConsumerSecret string
 	AccessToken    string
@@ -43,8 +39,9 @@ func openUrl(url string) {
 	fmt.Printf("open %s\n", url)
 }
 
-func NewTwitter() *Twitter {
+func NewTwitter(config TwitterConfig) *Twitter {
 	twitter := &Twitter{
+		config: config,
 		oauthClient: oauth.Client{
 			TemporaryCredentialRequestURI: "https://api.twitter.com/oauth/request_token",
 			ResourceOwnerAuthorizationURI: "https://api.twitter.com/oauth/authenticate",
@@ -125,27 +122,4 @@ func (t *Twitter) PostTweet(status string) error {
 	}
 
 	return nil
-}
-
-func (t *Twitter) LoadConfig(filepath string) {
-	var config TwitterConfig
-	_, err := toml.DecodeFile(filepath, &config)
-	if err != nil {
-		log.Fatal("config load error:", err)
-	}
-	t.config = config
-}
-
-func (t *Twitter) SaveConfig(filepath string) {
-	var buffer bytes.Buffer
-	encoder := toml.NewEncoder(&buffer)
-	err := encoder.Encode(t.config)
-	if err != nil {
-		log.Fatal("failed to encode config:", err)
-	}
-
-	err = ioutil.WriteFile(filepath, buffer.Bytes(), os.ModePerm)
-	if err != nil {
-		log.Fatal("failed to store config file:", err)
-	}
 }
