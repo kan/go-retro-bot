@@ -15,6 +15,7 @@ import (
 
 type appConfig struct {
 	Days    int
+	Retweet bool
 	Twitter TwitterConfig
 }
 
@@ -47,6 +48,7 @@ func main() {
 	flag.Parse()
 
 	config := loadConfig(*configFile)
+	log.Printf("%#v", config)
 	twitter := NewTwitter(config.Twitter)
 	defer saveConfig(*configFile, config, twitter)
 
@@ -73,8 +75,17 @@ func main() {
 			for {
 				time.Sleep(1 * time.Second)
 				if ts.Before(time.Now().AddDate(0, 0, -config.Days)) {
-					twitter.PostTweet(strings.Replace(tweet[5], "@", "", -1))
-					log.Printf("%s", tweet[5])
+					if tweet[6] == "" {
+						twitter.PostTweet(strings.Replace(tweet[5], "@", "", -1))
+						log.Printf("%s", tweet[5])
+					} else {
+						if config.Retweet {
+							twitter.Retweet(tweet[6])
+							log.Printf("retweet: (%s) %s", tweet[6], tweet[5])
+						} else {
+							log.Printf("skip retweet: %s", tweet[6])
+						}
+					}
 					break
 				}
 			}

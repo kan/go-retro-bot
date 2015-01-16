@@ -102,17 +102,14 @@ func (t *Twitter) getAccessToken() error {
 	return nil
 }
 
-// PostTweet post tweet to twitter API
-func (t *Twitter) PostTweet(status string) error {
+func (t *Twitter) post(apiURL string, param url.Values) error {
 	if t.token == nil {
 		err := t.getAccessToken()
 		if err != nil {
 			return err
 		}
 	}
-	param := make(url.Values)
-	param.Set("status", status)
-	apiURL := "https://api.twitter.com/1.1/statuses/update.json"
+
 	t.oauthClient.SignParam(t.token, "POST", apiURL, param)
 	res, err := http.PostForm(apiURL, url.Values(param))
 	if err != nil {
@@ -126,4 +123,19 @@ func (t *Twitter) PostTweet(status string) error {
 	}
 
 	return nil
+}
+
+// PostTweet post tweet to twitter API
+func (t *Twitter) PostTweet(status string) error {
+	param := make(url.Values)
+	param.Set("status", status)
+	apiURL := "https://api.twitter.com/1.1/statuses/update.json"
+	return t.post(apiURL, param)
+}
+
+// Retweet to twitter API
+func (t *Twitter) Retweet(statusID string) error {
+	param := make(url.Values)
+	apiURL := "https://api.twitter.com/1.1/statuses/retweet/" + statusID + ".json"
+	return t.post(apiURL, param)
 }
