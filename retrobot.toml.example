@@ -1,0 +1,8 @@
+Days = 365
+Retweet = true
+
+[Twitter]
+  ConsumerKey = "YOUR_KEY"
+  ConsumerSecret = "YOUR_SECRET"
+  AccessToken = ""
+  AccessSecret = ""
