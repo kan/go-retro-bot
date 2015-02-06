@@ -14,9 +14,10 @@ import (
 )
 
 type appConfig struct {
-	Days    int
-	Retweet bool
-	Twitter TwitterConfig
+	Days            int
+	Retweet         bool
+	AddInReplyToURL bool
+	Twitter         TwitterConfig
 }
 
 func loadConfig(filepath string) appConfig {
@@ -76,8 +77,17 @@ func main() {
 				time.Sleep(1 * time.Second)
 				if ts.Before(time.Now().AddDate(0, 0, -config.Days)) {
 					if tweet[6] == "" {
-						twitter.PostTweet(strings.Replace(tweet[5], "@", "", -1))
-						log.Printf("%s", tweet[5])
+						tw := strings.Replace(tweet[5], "@", "", -1)
+						if tweet[1] != "" && config.AddInReplyToURL {
+							res, err := twitter.ShowTweet(tweet[1])
+							if err != nil {
+								log.Printf("%s", err)
+								break
+							}
+							tw = tw + " " + res.getPermalink()
+						}
+						twitter.PostTweet(tw)
+						log.Printf("%s", tw)
 					} else {
 						if config.Retweet {
 							twitter.Retweet(tweet[6])

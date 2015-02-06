@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -26,6 +27,19 @@ type TwitterConfig struct {
 	ConsumerSecret string
 	AccessToken    string
 	AccessSecret   string
+}
+
+// Tweet is structer for twitter API result
+// https://dev.twitter.com/rest/reference/get/statuses/show/
+type Tweet struct {
+	ID   string `json:"id_str"`
+	User struct {
+		ScreenName string `json:"screen_name"`
+	} `json:"user"`
+}
+
+func (t *Tweet) getPermalink() string {
+	return "https://twitter.com/" + t.User.ScreenName + "/status/" + t.ID
 }
 
 func openURL(url string) {
@@ -102,6 +116,29 @@ func (t *Twitter) getAccessToken() error {
 	return nil
 }
 
+func (t *Twitter) get(apiURL string, param url.Values) (*http.Response, error) {
+	if t.token == nil {
+		err := t.getAccessToken()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	t.oauthClient.SignParam(t.token, "GET", apiURL, param)
+	apiURL = apiURL + "?" + param.Encode()
+	res, err := http.Get(apiURL)
+	if err != nil {
+		log.Println("failed to post tweet:", err)
+		return nil, err
+	}
+	if res.StatusCode != 200 {
+		log.Println("ailed to post tweet:", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (t *Twitter) post(apiURL string, param url.Values) error {
 	if t.token == nil {
 		err := t.getAccessToken()
@@ -123,6 +160,27 @@ func (t *Twitter) post(apiURL string, param url.Values) error {
 	}
 
 	return nil
+}
+
+// ShowTweet show tweet from twitter API
+func (t *Twitter) ShowTweet(statusID string) (*Tweet, error) {
+	param := make(url.Values)
+	param.Set("id", statusID)
+	apiURL := "https://api.twitter.com/1.1/statuses/show.json"
+	res, err := t.get(apiURL, param)
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	var tweet Tweet
+	err = json.NewDecoder(res.Body).Decode(&tweet)
+	if err != nil {
+		log.Println("json decode error", err)
+		return nil, err
+	}
+
+	return &tweet, nil
 }
 
 // PostTweet post tweet to twitter API

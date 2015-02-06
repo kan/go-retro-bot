@@ -16,8 +16,6 @@ go-retro-bot -c ./retrobot.toml tweets.csv
 
 ## TODO
 
-- 現在時刻とretro_daysにあわせたツイートの投稿
- - reply_to_urlを追加するオプションに対応
 - 単体でdaemonとして常駐可能に
 - 気力があればリリースフローを整理
 
